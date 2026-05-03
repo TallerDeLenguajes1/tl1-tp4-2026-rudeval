@@ -1,11 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/c,visualstudiocode,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=c,visualstudiocode,windows
 
-# Ignorar configuración de Visual Studio Code
 .vscode/
-
-# Ignorar archivo temporal de ejecución
-tempCodeRunnerFile.c
 
 ### C ###
 # Prerequisites
