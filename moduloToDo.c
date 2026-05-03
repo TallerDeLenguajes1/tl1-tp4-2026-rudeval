@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
 
 typedef struct tTarea{ 
     int TareaID;//Numérico autoincremental comenzando en 1000 
-    char *Descripcion;  //       
+    char *Descripcion;    
     int Duracion; // entre 10 – 100  
 }tTarea;  
 
@@ -13,29 +15,59 @@ typedef struct tNodo{
     struct tNodo *Siguiente;  
 }tNodo; 
 
-tTarea * crearYcargarTarea();
+void limpiarBuffer();
+tTarea * crearYcargarTarea(int id);
 tNodo * crearNodo(tTarea * datos);
 tNodo * crearListaVacia();
 void insertarNodoEnLista(tNodo ** lista, tNodo * nodo);
 
-
-
 int main(){
+    srand(time(NULL));
 
-    tTarea * TareaCreada = crearYcargarTarea(); //crea una tarea y devuelve el puntero a ella
-    tNodo * nuevoNodo = crearNodo(TareaCreada); //recibe la direc de la tarea y devuelve un p al nodo
+    //creo lista vacia
     tNodo * Lista = crearListaVacia(); //inicializamos lista - Lista=NULL
-    insertarNodoEnLista(&Lista, nuevoNodo);//insertamos nodo en lista - &Lista = direcc de memoria de Lista
+    
+    printf("\n----Carga de tareas----");
+    int i=0, id=1000, continuar=1;
+    do
+    {
+        //creo y cargo tarea
+        printf("\nTarea [%d]", id);
+        tTarea * TareaCreada = crearYcargarTarea(id); //crea una tarea y devuelve el puntero a ella
+        printf("Descripcion ingresada: %s", TareaCreada->Descripcion);
+
+        //creo nodo
+        tNodo * nuevoNodo = crearNodo(TareaCreada);//recibe la direc de la tarea y devuelve un p al nodo
+
+        //insertamos nodo en lista
+        insertarNodoEnLista(&Lista, nuevoNodo);//insertamos nodo en lista - &Lista = direcc de memoria de Lista, Lista=0x0
+
+        id++;
+        printf("\n¿Continuar=1 | Finalizar=0?");
+            scanf("%d", &continuar);
+            limpiarBuffer();
+
+    } while (continuar!=0);
+    
 
     return 0;
 }
 
 
-tTarea * crearYcargarTarea(){
+tTarea * crearYcargarTarea(int id){
+
     tTarea *tareas = (tTarea *) malloc(sizeof(tTarea)); //reservo la memoria para la tarea, y la asigno a un puntero tipo tTarea
-    tareas->TareaID = 1000; //!
-    tareas->Duracion= 10;
-    tareas->Descripcion = "descripcion"; //hacer con strcpy
+    
+    tareas->TareaID = id; 
+
+    char buff[50];
+    printf("\n\tIngrese descripcion de tarea [%d]: ", tareas->TareaID);
+        fgets(buff, sizeof(buff), stdin);
+        tareas->Descripcion = (char *) malloc (sizeof(char) * strlen(buff) + 1); // Reserva de memoria para la cadena pero aumento 1 byte para el carcter nulo
+        strcpy(tareas->Descripcion, buff);  
+
+    tareas->Duracion= rand()%91 + 10; //rand entre 10 y 100
+    
     return tareas; //devuelve el puntero a la tarea creada;
 }
 
@@ -53,11 +85,19 @@ tNodo * crearListaVacia() //inicializamos, apuntando el puntero a NULL
 }
 
 void insertarNodoEnLista(tNodo ** lista, tNodo * nuevoNodo){ //(** es punt a punt de lista) xq necesito pasar la direc de memoria del punt a lista
-                                                        //pasamos la direc de memoria de la lista q es un punt.
+                                                        //pasamos la direc de memoria de la lista de afuera q es un punt.
     nuevoNodo->Siguiente = *lista; //*lista=direcc de vble lista
-                                //el nuevo nodo apunta al que era el primero
+                                //el nuevo nodo apunta al que era el primero, al comienzo de la lista
     *lista = nuevoNodo; //lista empieza en el nuevo nodo
 }
+
+void limpiarBuffer(){
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {} 
+    //sigue tomando info desde stdin buscando algun valor distinto a salto de linea o endOfFile
+    //usar despues de scanf para numeros, antes del fgets para tomar cadena
+}
+
 
 
 
