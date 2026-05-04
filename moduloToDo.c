@@ -19,9 +19,12 @@ void limpiarBuffer();
 tTarea * crearYcargarTarea(int id);
 tNodo * crearNodo(tTarea * datos);
 tNodo * crearListaVacia();
-void insertarNodoEnLista(tNodo ** lista, tNodo * nodo);
-tNodo * buscarNodo(tNodo*lista, int idBuscado);
+void insertarNodoAlInicio(tNodo ** lista, tNodo * nodo);
 tNodo * quitarNodoPorID(tNodo **lista, int id);
+void mostrarLista(tNodo*lista);
+tNodo * buscarNodoID(tNodo*lista, int idBuscado); 
+tNodo * buscarNodoClave(tNodo*lista, char * clave);
+void liberarLista(tNodo *lista)
 
 
 int main(){
@@ -39,16 +42,15 @@ int main(){
             //creo y cargo tarea
             printf("\nTarea [%d]", id);
             tTarea * TareaCreada = crearYcargarTarea(id); //crea una tarea y devuelve el puntero a ella
-            printf("Descripcion ingresada: %s", TareaCreada->Descripcion);
 
             //creo nodo
             tNodo * nuevoNodo = crearNodo(TareaCreada);//recibe la direc de la tarea y devuelve un p al nodo
 
             //insertamos nodo en lista
-            insertarNodoEnLista(&ListaPendientes, nuevoNodo);//insertamos nodo en lista - &Lista = direcc de memoria de Lista, Lista=0x0
+            insertarNodoAlInicio(&ListaPendientes, nuevoNodo);//insertamos nodo en lista - &Lista = direcc de memoria de Lista, Lista=0x0
 
             id++;
-            printf("\n¿Continuar=1 | Finalizar=0?");
+            printf("\nContinuar=1 | Finalizar=0 ");
                 scanf("%d", &continuar);
                 limpiarBuffer();
 
@@ -57,7 +59,8 @@ int main(){
     printf("\n----Tareas pendientes --> tareas realizadas----");
         //creo lista vacia
         tNodo * ListaRealizadas = crearListaVacia(); //inicializamos lista - Lista=NULL
-        int idMover, continuar=1;
+        int idMover;
+        continuar=1;
         do
         {
             printf("\nIngrese id de tarea a mover: ");
@@ -68,21 +71,61 @@ int main(){
             if (tareaAmover != NULL)
             {
                 //insertamos tarea en tareaRealizada
-                insertarNodoEnLista(&ListaRealizadas, tareaAmover);
+                insertarNodoAlInicio(&ListaRealizadas, tareaAmover);
             }else
             {
                 printf("\nNo se encontro la tarea");
             }
             
-
-            printf("\n¿Continuar=1 | Finalizar=0?");
+            printf("\nContinuar=1 | Finalizar=0 ");
                 scanf("%d", &continuar);
                 limpiarBuffer();
         } while (continuar!=0);
 
+    printf("\n----Listado de Tareas pendientes----");
+        mostrarLista(ListaPendientes);
+    printf("\n----Listado de Tareas Realizadas----");
+        mostrarLista(ListaRealizadas);
 
+    printf("\n----Buscar tarea por ID----");
+        int idBuscar;
+        printf("\nIngrese el id:");
+            scanf("%d",&idBuscar);
+
+        //buscar en pendientes
+        tNodo * tareaPorId = buscarNodoID(ListaPendientes, idBuscar);
+        if (tareaPorId != NULL)
+        {
+            
+            printf("\n\tTarea encontrada en PENDIENTES: ");
+                printf("\n\tID: %d", tareaPorId->datosTarea->TareaID);
+                printf("\n\tDescripcion: %s", tareaPorId->datosTarea->Descripcion);
+                printf("\n\tDuracion: %d\n", tareaPorId->datosTarea->Duracion);
+        }else {
+            //buscar en realizadas
+            tareaPorId = buscarNodoID(ListaRealizadas, idBuscar);
+
+            if (tareaPorId != NULL)
+            {
+                printf("\n\tTarea encontrada en REALIZADAS: ");
+                    printf("\n\tID: %d", tareaPorId->datosTarea->TareaID);
+                    printf("\n\tDescripcion: %s", tareaPorId->datosTarea->Descripcion);
+                    printf("\n\tDuracion: %d\n", tareaPorId->datosTarea->Duracion);
+            }else { 
+            printf("\n\tTarea no encontrada ");
+            }
+        }
+
+    printf("\n----Buscar tarea por CLAVE----");
+        char clave[50];
+        printf("\nIngrese palabra clave: ");
+        fgets(clave, sizeof(clave), stdin);
+    
+    
         
     //liberamos memoria
+    liberarLista(ListaPendientes);
+    liberarLista(ListaRealizadas);
 
     return 0;
 }
@@ -117,20 +160,11 @@ tNodo * crearListaVacia() //inicializamos, apuntando el puntero a NULL
     return NULL;
 }
 
-void insertarNodoEnLista(tNodo ** lista, tNodo * nuevoNodo){ //(** es punt a punt de lista) xq necesito pasar la direc de memoria del punt a lista
+void insertarNodoAlInicio(tNodo ** lista, tNodo * nuevoNodo){ //(** es punt a punt de lista) xq necesito pasar la direc de memoria del punt a lista
                                                         //pasamos la direc de memoria de la lista de afuera q es un punt.
     nuevoNodo->Siguiente = *lista; //*lista=direcc de vble lista
                                 //el nuevo nodo apunta al que era el primero, al comienzo de la lista
     *lista = nuevoNodo; //lista empieza en el nuevo nodo
-}
-
-tNodo * buscarNodo(tNodo*lista, int idBuscado){
-    tNodo * aux = lista; //apuntamos con punt aux a la cabecera de la lista a recorrer
-    while (aux && aux->datosTarea->TareaID != idBuscado) //aux != NULL && ... 
-    {
-        aux = aux->Siguiente;
-    }
-    return aux;
 }
 
 tNodo * quitarNodoPorID(tNodo **lista, int id){
@@ -157,6 +191,57 @@ tNodo * quitarNodoPorID(tNodo **lista, int id){
 
     return (nodoAux);
 
+}
+
+void mostrarLista(tNodo*lista){
+    tNodo *aux = lista; //aux para no perder la primera posicion
+    if (aux == NULL)
+    {
+        printf("\n\tLista vacia");
+        return; //corta aquí
+    }
+    
+    while (aux != NULL) //recorremos todos los nodos
+    {
+        printf("\n\tTarea[%d]", aux->datosTarea->TareaID);
+        printf("\n\t\tDescripcion: %s", aux->datosTarea->Descripcion);
+        printf("\n\t\tDuracion: %d", aux->datosTarea->Duracion);  
+
+        aux = aux->Siguiente; //avanzamos de nodo
+    }
+    
+}
+
+tNodo * buscarNodoID(tNodo*lista, int idBuscado){
+    tNodo * aux = lista; //apuntamos con punt aux a la cabecera de la lista a recorrer
+    while (aux && aux->datosTarea->TareaID != idBuscado) //aux != NULL && ... 
+    {
+        aux = aux->Siguiente;
+    }
+    return aux;
+}
+
+tNodo * buscarNodoClave(tNodo*lista, char * clave){
+    tNodo *aux = lista;
+    while (aux != NULL && strstr(aux->datosTarea->Descripcion, clave) == NULL)
+    {
+        aux = aux->Siguiente;
+    }
+
+    return aux;
+}
+
+void liberarLista(tNodo *lista){  //recorremos la lista liberando cada malloc hecho
+    tNodo *aux;
+
+    while (lista != NULL){
+        aux = lista;
+        lista = lista->Siguiente;
+
+        free(aux->datosTarea->Descripcion);
+        free(aux->datosTarea);
+        free(aux);
+    }
 }
 
 void limpiarBuffer(){
