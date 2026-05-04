@@ -21,6 +21,7 @@ tNodo * crearNodo(tTarea * datos);
 tNodo * crearListaVacia();
 void insertarNodoEnLista(tNodo ** lista, tNodo * nodo);
 tNodo * buscarNodo(tNodo*lista, int idBuscado);
+tNodo * quitarNodoPorID(tNodo **lista, int id);
 
 
 int main(){
@@ -62,16 +63,21 @@ int main(){
             printf("\nIngrese id de tarea a mover: ");
                 scanf("%d", &idMover);
 
-            //buscamos tarea a mover
-            tNodo * tareaAmover = buscarNodo(ListaPendientes, idMover);
-
-            //eliminamos de ListaRealizadas la tarea
+            //buscamos tarea a mover y la eliminamos de la listaPendientes
+            tNodo * tareaAmover = quitarNodoPorID(&ListaPendientes, idMover);
+            if (tareaAmover != NULL)
+            {
+                //insertamos tarea en tareaRealizada
+                insertarNodoEnLista(&ListaRealizadas, tareaAmover);
+            }else
+            {
+                printf("\nNo se encontro la tarea");
+            }
             
-            //insertamos tarea en tareaRealizada
-            insertarNodoEnLista(&ListaRealizadas, tareaAmover);
 
             printf("\n¿Continuar=1 | Finalizar=0?");
                 scanf("%d", &continuar);
+                limpiarBuffer();
         } while (continuar!=0);
 
 
@@ -127,9 +133,29 @@ tNodo * buscarNodo(tNodo*lista, int idBuscado){
     return aux;
 }
 
-tNodo * quitarNodo(tNodo **lista, tTarea datos){
+tNodo * quitarNodoPorID(tNodo **lista, int id){
     tNodo * nodoAux = (*lista); //es la direcc del punt que apunta a la lista, para modificarla desde la cabecera
     tNodo * nodoAnterior = NULL;
+    while (nodoAux != NULL && nodoAux->datosTarea->TareaID != id)
+    {
+        nodoAnterior = nodoAux;
+        nodoAux = nodoAux->Siguiente;
+    }
+
+    if (nodoAux != NULL)
+    {
+        if (nodoAux == (*lista))        
+        {
+            (*lista) = nodoAux->Siguiente;
+        }else
+        {
+            nodoAnterior->Siguiente = nodoAux->Siguiente;
+        }
+        nodoAux->Siguiente = NULL;
+
+    }
+
+    return (nodoAux);
 
 }
 
