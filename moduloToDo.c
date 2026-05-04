@@ -20,35 +20,63 @@ tTarea * crearYcargarTarea(int id);
 tNodo * crearNodo(tTarea * datos);
 tNodo * crearListaVacia();
 void insertarNodoEnLista(tNodo ** lista, tNodo * nodo);
+tNodo * buscarNodo(tNodo*lista, int idBuscado);
+
 
 int main(){
     srand(time(NULL));
 
-    //creo lista vacia
-    tNodo * Lista = crearListaVacia(); //inicializamos lista - Lista=NULL
-    
     printf("\n----Carga de tareas----");
-    int i=0, id=1000, continuar=1;
-    do
-    {
-        //creo y cargo tarea
-        printf("\nTarea [%d]", id);
-        tTarea * TareaCreada = crearYcargarTarea(id); //crea una tarea y devuelve el puntero a ella
-        printf("Descripcion ingresada: %s", TareaCreada->Descripcion);
-
-        //creo nodo
-        tNodo * nuevoNodo = crearNodo(TareaCreada);//recibe la direc de la tarea y devuelve un p al nodo
-
-        //insertamos nodo en lista
-        insertarNodoEnLista(&Lista, nuevoNodo);//insertamos nodo en lista - &Lista = direcc de memoria de Lista, Lista=0x0
-
-        id++;
-        printf("\n¿Continuar=1 | Finalizar=0?");
-            scanf("%d", &continuar);
-            limpiarBuffer();
-
-    } while (continuar!=0);
     
+        //creo lista vacia
+        tNodo * ListaPendientes = crearListaVacia(); //inicializamos lista - Lista=NULL
+        
+        int i=0, id=1000, continuar=1;
+        
+        do
+        {
+            //creo y cargo tarea
+            printf("\nTarea [%d]", id);
+            tTarea * TareaCreada = crearYcargarTarea(id); //crea una tarea y devuelve el puntero a ella
+            printf("Descripcion ingresada: %s", TareaCreada->Descripcion);
+
+            //creo nodo
+            tNodo * nuevoNodo = crearNodo(TareaCreada);//recibe la direc de la tarea y devuelve un p al nodo
+
+            //insertamos nodo en lista
+            insertarNodoEnLista(&ListaPendientes, nuevoNodo);//insertamos nodo en lista - &Lista = direcc de memoria de Lista, Lista=0x0
+
+            id++;
+            printf("\n¿Continuar=1 | Finalizar=0?");
+                scanf("%d", &continuar);
+                limpiarBuffer();
+
+        } while (continuar!=0);
+
+    printf("\n----Tareas pendientes --> tareas realizadas----");
+        //creo lista vacia
+        tNodo * ListaRealizadas = crearListaVacia(); //inicializamos lista - Lista=NULL
+        int idMover, continuar=1;
+        do
+        {
+            printf("\nIngrese id de tarea a mover: ");
+                scanf("%d", &idMover);
+
+            //buscamos tarea a mover
+            tNodo * tareaAmover = buscarNodo(ListaPendientes, idMover);
+
+            //eliminamos de ListaRealizadas la tarea
+            
+            //insertamos tarea en tareaRealizada
+            insertarNodoEnLista(&ListaRealizadas, tareaAmover);
+
+            printf("\n¿Continuar=1 | Finalizar=0?");
+                scanf("%d", &continuar);
+        } while (continuar!=0);
+
+
+        
+    //liberamos memoria
 
     return 0;
 }
@@ -71,7 +99,6 @@ tTarea * crearYcargarTarea(int id){
     return tareas; //devuelve el puntero a la tarea creada;
 }
 
-
 tNodo * crearNodo(tTarea * datos){ //recibe punt a tTarea y devuelve un nodo
     tNodo *pNodo = (tNodo *)malloc(sizeof(tNodo)); //reservo memoria para el nodo y almaceno la dire en punt
     pNodo->datosTarea = datos; //copia toda la estructura
@@ -89,6 +116,21 @@ void insertarNodoEnLista(tNodo ** lista, tNodo * nuevoNodo){ //(** es punt a pun
     nuevoNodo->Siguiente = *lista; //*lista=direcc de vble lista
                                 //el nuevo nodo apunta al que era el primero, al comienzo de la lista
     *lista = nuevoNodo; //lista empieza en el nuevo nodo
+}
+
+tNodo * buscarNodo(tNodo*lista, int idBuscado){
+    tNodo * aux = lista; //apuntamos con punt aux a la cabecera de la lista a recorrer
+    while (aux && aux->datosTarea->TareaID != idBuscado) //aux != NULL && ... 
+    {
+        aux = aux->Siguiente;
+    }
+    return aux;
+}
+
+tNodo * quitarNodo(tNodo **lista, tTarea datos){
+    tNodo * nodoAux = (*lista); //es la direcc del punt que apunta a la lista, para modificarla desde la cabecera
+    tNodo * nodoAnterior = NULL;
+
 }
 
 void limpiarBuffer(){
